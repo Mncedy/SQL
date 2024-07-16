@@ -150,63 +150,7 @@ Order BY
 	job_count desc
 	
 
-/*
-Identify the top 5 skills that are most frequently mentioned in job postings. 
-Find the skill IDs with the highest counts in skill_job_dim table, 
-and then join this result with the skills_dim table to get skills names.
-*/
 
-WITH most_skills AS (
-	Select
-		skill_id,
-		COUNT(*) AS skill_count
-	From 
-		jobPostings..skills_job_dim
-	Group BY
-		skill_id 
-	)
-Select Top 5
-	sd.skills,
-	ms.skill_count
-From jobPostings..skills_dim AS sd
-	 JOIN most_skills AS ms ON sd.skill_id = ms.skill_id
-Order BY
-	skill_count desc
-
-
-
-
-/*
-Determine the size category ("Small", "Medium", "Large") for each company by first identifying the number of job postings they have. 
-Calculate the total number of job postings per company.
-A company is considered 'Small if it has less than 10 job postings'.
-'Medium when the number of job postings is between 10 and 50'.
-'Large if it has more than 50 job postings'.
-Aggregate job counts per company before classifying them based on size.
-*/
-
-WITH CompanyJobCount AS (
-	Select 
-		company_id,
-		COUNT(*) AS jobTotal
-	From 
-		jobPostings..job_postings_fact
-	Group BY
-		company_id
-	)
-Select 
-	cd.name,
-	jobTotal,
-	CASE
-		When jobTotal < 10 Then 'Small'
-		When jobTotal BETWEEN 10 AND 50 Then 'Medium'
-		ELSE 'Large'
-	END AS company_size_cat
-From 
-	CompanyJobCount cjc
-		JOIN company_dim cd ON cjc.company_id = cd.company_id
-Order BY
-	jobTotal
 
 
 
