@@ -8,7 +8,7 @@ From jobPostings..company_dim
 
 Select  *
 From jobPostings..skills_dim
-Where skills like '%power%' OR skills like '%tableau%'
+-- Where skills like '%power%' OR skills like '%tableau%'
 
 Select Top 5 *
 From jobPostings..skills_job_dim
@@ -21,18 +21,20 @@ Create Index idx_job_id ON skills_job_dim (job_id); */
 ALTER TABLE jobPostings..job_postings_fact
 ALTER COLUMN job_posted_date DATETIME;
 
-
+-- Display columns for time zone conversion
 SELECT Top 5
 	job_title_short,
 	job_location,
 	job_posted_date AT TIME ZONE 'UTC' AS UTC,
-	job_posted_date AT TIME ZONE 'UTC' AT TIME ZONE 'Eastern Standard Time' AS EST
-	/*DATEPART(YEAR, job_posted_date) AS Year_Date,
+	job_posted_date AT TIME ZONE 'UTC' AT TIME ZONE 'Eastern Standard Time' AS EST,
+	DATEPART(YEAR, job_posted_date) AS Year_Date,
 	DATEPART(Month, job_posted_date) AS Month_Date,
 	DATEPART(DAY, job_posted_date) AS Month_Day,
-	--CAST(job_posted_date AS DATE) AS Date */
+	CAST(job_posted_date AS DATE) AS Date,
+	CAST(job_posted_date AS TIME) AS Time
 FROM 
 	jobPostings..job_postings_fact;
+
 
 
 SELECT 
@@ -102,7 +104,7 @@ Group BY
         ELSE 'Hybrid'
     END 
 
-Select *
+Select TOP 5 *
 From (
 	SELECT 
     *

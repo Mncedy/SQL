@@ -144,7 +144,8 @@ WITH skill_demand AS (
         sk.skill_id,
         sk.skills,
         COUNT(skd.job_id) AS demand_count
-    FROM job_postings_fact jpf
+    FROM 
+		job_postings_fact jpf
     INNER JOIN skills_job_dim skd ON jpf.job_id = skd.job_id
     INNER JOIN skills_dim sk ON skd.skill_id = sk.skill_id
     WHERE
@@ -200,3 +201,189 @@ HAVING
 Order BY 
 	avg_salary desc,
 	demand_count desc
+
+
+/*
+
+*/
+
+-- Create a temporary table to hold the skills and their corresponding salaries
+CREATE TABLE #SkillSalaries (
+		job_title_short nvarchar(100), 
+		salary_year_avg DECIMAL,
+		skill nvarchar(100)
+)
+
+INSERT INTO 
+	#SkillSalaries
+SELECT 
+    job_title_short,
+    salary_year_avg,
+    skills
+	FROM 
+		jobPostings..job_postings_fact jpf
+		JOIN skills_job_dim sj ON jpf.job_id = sj.job_id
+		JOIN skills_dim sd ON sj.skill_id = sd.skill_id;
+
+-- Common Table Expression (CTE) to calculate salary statistics for each skill
+WITH SalaryStats AS (
+    SELECT 
+        job_title_short, 
+		skill,
+        AVG(salary_year_avg) AS avg_salary, 
+        MAX(salary_year_avg) AS max_salary, 
+        MIN(salary_year_avg) AS min_salary
+    FROM 
+        #SkillSalaries
+    GROUP BY 
+       job_title_short, skill
+)
+-- Select the skill and its salary statistics, ordering by average salary in descending order
+SELECT 
+    skill, 
+    avg_salary, 
+    max_salary, 
+    min_salary
+FROM 
+    SalaryStats
+Where
+	job_title_short = 'Data Analyst'
+ORDER BY 
+    avg_salary DESC;
+
+
+
+/*
+
+*/
+
+WITH SalaryDistribution AS (
+    SELECT 
+		ss.skill, 
+		jpf.job_title_short,
+		jpf.salary_year_avg, 
+		NTILE(100) OVER (PARTITION BY skill ORDER BY jpf.salary_year_avg) AS percentile
+    FROM jobPostings..job_postings_fact jpf
+	JOIN #SkillSalaries ss ON jpf.job_title_short = ss.job_title_short
+)
+SELECT 
+	skill, 
+	percentile, 
+	AVG(salary_year_avg) AS avg_salary
+FROM 
+	SalaryDistribution
+Where
+	job_title_short = 'Data Analyst' AND
+	salary_year_avg IS NOT NULL
+GROUP BY 
+	skill, percentile
+ORDER BY 
+	skill, percentile;
+
+select top 2 * from job_postings_fact;
+
+
+/*
+
+*/
+
+WITH DataAnalystJobs AS (
+    SELECT 
+        jp.job_id, 
+        jp.job_title_short
+    FROM 
+        jobPostings..job_postings_fact jp
+    JOIN 
+        jobPostings..skills_job_dim sjd ON jp.job_id = sjd.job_id
+    WHERE 
+        jp.job_title_short LIKE '%Data Analyst%'  
+),
+
+-- CTE to count the number of times each skill appears in Data Analyst jobs
+SkillCounts AS (
+    SELECT 
+        sjd.skill_id, 
+        COUNT(sjd.skill_id) AS skill_count 
+    FROM 
+        DataAnalystJobs daj
+    JOIN 
+        jobPostings..skills_job_dim sjd ON daj.job_id = sjd.job_id
+    GROUP BY 
+        sjd.skill_id 
+),
+
+-- CTE to calculate the total number of Data Analyst jobs
+TotalJobs AS (
+    SELECT 
+        COUNT(*) AS total_jobs  
+    FROM 
+        DataAnalystJobs
+),
+
+-- CTE to calculate skill percentages based on total job counts
+SkillPercentages AS (
+    SELECT 
+        sc.skill_id, 
+        sd.skills, 
+        sc.skill_count, 
+        CAST(ROUND(CAST(sc.skill_count AS DECIMAL(10, 2)) / tj.total_jobs * 100, 0) AS INT) AS skill_percentage 
+    FROM 
+        SkillCounts sc
+    JOIN 
+        jobPostings..skills_dim sd ON sc.skill_id = sd.skill_id
+    CROSS JOIN 
+        TotalJobs tj  -- Joins to get total job counts for percentage calculation
+),
+
+-- CTE to rank skills by percentage for each job title
+RankedSkills AS (
+    SELECT 
+        daj.job_title_short, 
+        sp.skills, 
+        sp.skill_percentage,
+        ROW_NUMBER() OVER (PARTITION BY daj.job_title_short, sp.skills ORDER BY sp.skill_percentage DESC) AS rn  -- Ranks skills within each job title
+    FROM 
+        DataAnalystJobs daj
+    JOIN 
+        jobPostings..skills_job_dim sjd ON daj.job_id = sjd.job_id
+    JOIN 
+        SkillPercentages sp ON sjd.skill_id = sp.skill_id
+)
+
+-- Final selection to get the top skill percentage for each job title and skill
+SELECT 
+    job_title_short, 
+    skills, 
+    skill_percentage
+FROM 
+    RankedSkills
+WHERE 
+    rn = 1  -- Selects only the top-ranked skill for each job title
+ORDER BY 
+    skill_percentage DESC; 
+
+
+
+
+/*
+
+*/
+
+/*CREATE VIEW JobSkillsCompany AS
+SELECT 
+    jpf.job_title_short,
+    STRING_AGG(sd.skills, ', ') AS skills,
+    cd.name AS company_name
+FROM 
+    jobPostings..job_postings_fact jpf
+JOIN 
+    skills_job_dim sjd ON jpf.job_id = sjd.job_id
+JOIN 
+    skills_dim sd ON sjd.skill_id = sd.skill_id
+JOIN 
+    company_dim cd ON jpf.company_id = cd.company_id
+GROUP BY 
+    jpf.job_title_short, cd.name;
+
+
+SELECT TOP 5 * FROM JobSkillsCompany
