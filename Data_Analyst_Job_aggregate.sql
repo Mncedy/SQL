@@ -1,5 +1,16 @@
 use jobPostings;
 
+-- This method queries the INFORMATION_SCHEMA.COLUMNS view to get information about columns in a specific table.
+SELECT 
+    COLUMN_NAME,
+    DATA_TYPE
+FROM 
+    INFORMATION_SCHEMA.COLUMNS
+WHERE 
+    TABLE_NAME = 'job_postings_fact';
+
+
+-- Preview table by retrieving top 5 rows
 Select Top 5 *
 From jobPostings..job_postings_fact
 
@@ -14,14 +25,19 @@ Select Top 5 *
 From jobPostings..skills_job_dim
 
 -- Create indexes on foreign key columns gor better perfomance
-/* Create Index idx_company ON job_postings_fact (company_id);
+ Create Index idx_company ON job_postings_fact (company_id);
 Create Index idx_skill_id ON skills_job_dim (skill_id);
-Create Index idx_job_id ON skills_job_dim (job_id); */
+Create Index idx_job_id ON skills_job_dim (job_id); 
 
 ALTER TABLE jobPostings..job_postings_fact
 ALTER COLUMN job_posted_date DATETIME;
 
--- Display columns for time zone conversion
+/*
+This query will give you detailed information about job postings, including their titles, 
+locations, various date and time components, and conversions to different time zones (UTC and Eastern Standard Time).
+- Display columns for time zone conversion
+*/
+
 SELECT Top 5
 	job_title_short,
 	job_location,
@@ -35,9 +51,13 @@ SELECT Top 5
 FROM 
 	jobPostings..job_postings_fact;
 
-
+/*
+This query will provide you with a breakdown of job postings per month for the 'Business Analyst' job title, 
+sorted from the month with the most postings to the least. 
+*/
 
 SELECT 
+	job_title_short,
 	COUNT(job_id) AS Job,
 	DATEPART(Month, job_posted_date) AS Month
 FROM 
@@ -45,45 +65,15 @@ FROM
 Where
 	job_title_short = 'Business Analyst'
 Group BY
+	job_title_short,
 	DATEPART(Month, job_posted_date)
 Order By
 	Job desc
 
-
--- Creating tables for each month
-SELECT 
-    *
-INTO 
-    january_jobs
-FROM 
-    jobPostings..job_postings_fact
-WHERE 
-    DATEPART(Month, job_posted_date) = 1;
-
-SELECT 
-    *
-INTO 
-    february_jobs
-FROM 
-    jobPostings..job_postings_fact
-WHERE 
-    DATEPART(Month, job_posted_date) = 2;
-
-
--- This method queries the INFORMATION_SCHEMA.COLUMNS view to get information about columns in a specific table.
-SELECT 
-    COLUMN_NAME,
-    DATA_TYPE
-FROM 
-    INFORMATION_SCHEMA.COLUMNS
-WHERE 
-    TABLE_NAME = 'job_postings_fact';
-
-
--- Change the column data type to DECIMAL
-ALTER TABLE jobPostings..job_postings_fact
-ALTER COLUMN salary_year_avg DECIMAL(18,2);
-
+/*
+This query essentially provides a breakdown of how many job postings for "Business Analyst" 
+fall into each location category defined by the CASE statement.
+*/
 
 
 SELECT 
@@ -103,26 +93,8 @@ Group BY
         WHEN job_location = 'Singapore' THEN 'Ideally'
         ELSE 'Hybrid'
     END 
-
-Select TOP 5 *
-From (
-	SELECT 
-    *
-	FROM 
-    jobPostings..job_postings_fact
-WHERE 
-    DATEPART(Month, job_posted_date) = 7
-	) AS july_jobs;
-
-With sep_jobs AS (
-	SELECT *
-	FROM 
-		jobPostings..job_postings_fact
-	WHERE 
-		DATEPART(Month, job_posted_date) = 9
-	)
-Select *
-From sep_jobs;
+Order By
+	numJobs desc;
 
 
 /* 
@@ -139,20 +111,14 @@ WITH jobCount AS (
         jobPostings..job_postings_fact
     Group BY 
         company_id
-)
-
-Select Top 5
+		)
+Select Top 5 
 	cd.name AS company_name,
 	jc.job_count
 From company_dim cd
-	 JOIN jobCount jc ON jc.company_id = cd.company_id
+	JOIN jobCount jc ON cd.company_id = jc.company_id
 Order BY
 	job_count desc
-	
-
-
-
-
 
 
 /*
@@ -185,28 +151,10 @@ INNER JOIN skills_dim sk ON sk.skill_id = remote_jobs.skill_id
 Order BY
 	skill_count desc
 
-Select
-	job_title_short,
-	company_id,
-	job_location
-From
-	jobPostings..january_jobs
-UNION 
-Select
-	job_title_short,
-	company_id,
-	job_location
-From
-	jobPostings..february_jobs
-UNION 
-Select
-	job_title_short,
-	company_id,
-	job_location
-From
-	jobPostings..march_jobs
 
-
+-- Change the column data type to DECIMAL
+ALTER TABLE jobPostings..job_postings_fact
+ALTER COLUMN salary_year_avg DECIMAL(18,2);
 
 /*
 - Get the corresponding skill and skill type for each job posting in in q1.
@@ -266,4 +214,86 @@ WHERE
     job_title_short = 'Data Analyst'
 ORDER BY
     salary_year_avg DESC;
+
+
+
+-- Query to analyze trends in job postings over time
+SELECT TOP 5
+	job_title_short,
+    YEAR(job_posted_date) AS year,
+    MONTH(job_posted_date) AS month,
+    COUNT(*) AS job_postings_count
+FROM
+    jobPostings..job_postings_fact
+WHERE
+    job_title_short = 'Data Analyst'
+GROUP BY
+	job_title_short,
+    YEAR(job_posted_date),
+    MONTH(job_posted_date)
+ORDER BY
+    YEAR(job_posted_date),
+    MONTH(job_posted_date);
+
+-- Query to analyze remote data analyst job postings
+SELECT
+    job_id,
+    job_title,
+    job_location,
+    salary_year_avg,
+    CAST(job_posted_date AS date) AS date,
+    name AS company_name
+FROM
+    jobPostings..job_postings_fact jpf
+    JOIN company_dim cd ON jpf.company_id = cd.company_id
+WHERE
+    job_title_short = 'Data Analyst' AND
+    job_location = 'Anywhere'
+ORDER BY
+    salary_year_avg DESC;
+
+
+
+-- Creating tables for each month
+SELECT 
+    *
+INTO 
+    january_jobs
+FROM 
+    jobPostings..job_postings_fact
+WHERE 
+    DATEPART(Month, job_posted_date) = 1;
+
+SELECT 
+    *
+INTO 
+    february_jobs
+FROM 
+    jobPostings..job_postings_fact
+WHERE 
+    DATEPART(Month, job_posted_date) = 2;
+
+
+
+
+Select
+	job_title_short,
+	company_id,
+	job_location
+From
+	jobPostings..january_jobs
+UNION 
+Select
+	job_title_short,
+	company_id,
+	job_location
+From
+	jobPostings..february_jobs
+UNION 
+Select
+	job_title_short,
+	company_id,
+	job_location
+From
+	jobPostings..march_jobs
 

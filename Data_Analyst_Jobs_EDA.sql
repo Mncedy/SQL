@@ -227,8 +227,6 @@ Order BY
 	demand_count desc
 
 
-
-
 /*
 Determine the size category ("Small", "Medium", "Large") for each company by first identifying the number of job postings they have. 
 Calculate the total number of job postings per company.
@@ -339,7 +337,7 @@ GROUP BY
 ORDER BY 
 	skill, percentile;
 
-select top 2 * from job_postings_fact;
+select top 2 * from job_postings_fact where salary_hour_avg is not null;
 
 
 /*
@@ -428,7 +426,8 @@ ORDER BY
 
 */
 
-/*CREATE VIEW JobSkillsCompany AS
+/*
+CREATE VIEW JobSkillsCompany AS
 SELECT 
     jpf.job_title_short,
     STRING_AGG(sd.skills, ', ') AS skills,
@@ -442,7 +441,7 @@ JOIN
 JOIN 
     company_dim cd ON jpf.company_id = cd.company_id
 GROUP BY 
-    jpf.job_title_short, cd.name;
+    jpf.job_title_short, cd.name;*/
 
 
 SELECT TOP 5 * FROM JobSkillsCompany
