@@ -144,7 +144,7 @@ WITH PopvsVac AS (
     SELECT
         dea.continent, 
         dea.location, 
-        CAST(dea.date AS DATE) AS DateOnly, 
+        CAST(dea.date AS DATE) AS Date, 
         dea.population, 
         vac.new_vaccinations,
         SUM(CONVERT(int, vac.new_vaccinations)) OVER (PARTITION BY dea.location ORDER BY dea.date) AS PeopleVaccCount
@@ -158,7 +158,7 @@ WITH PopvsVac AS (
 SELECT 
     continent, 
     location, 
-    DateOnly, 
+    Date, 
     population, 
     new_vaccinations, 
     PeopleVaccCount,
@@ -168,7 +168,7 @@ FROM
 WHERE
 	new_vaccinations IS NOT NULL
 ORDER BY 
-    location, DateOnly;
+    location, Date;
 
 
 
