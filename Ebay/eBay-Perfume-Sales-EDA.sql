@@ -127,8 +127,7 @@ ORDER BY
     TotalSold;
 
 
--- SQL doesn't directly support correlation coefficients, but you can calculate it manually or use a statistical package.
--- Example: Calculate correlation between price and sold (basic example)
+-- Calculate correlation between price and sold (basic example)
 
 -- Calculate mean of price and sold
 WITH Stats AS (
