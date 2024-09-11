@@ -8,7 +8,7 @@ SELECT
 FROM 
     mens_perfume;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT 
     AVG(price) AS AvgPrice, 
     MIN(price) AS MinPrice, 
@@ -30,7 +30,7 @@ GROUP BY
 ORDER BY 
     price;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT 
     price, 
     COUNT(*) AS Frequency
@@ -49,7 +49,7 @@ SELECT
 FROM 
     mens_perfume;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT 
     SUM(available) AS TotalAvailable, 
     SUM(sold) AS TotalSold
@@ -68,7 +68,7 @@ GROUP BY
 ORDER BY 
     TotalSold DESC;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT Top 10
     brand, 
     SUM(sold) AS TotalSold
@@ -91,7 +91,7 @@ GROUP BY
 ORDER BY 
     SalesDate;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT 
     CAST(lastUpdated AS DATE) AS SalesDate, 
     SUM(sold) AS TotalSold
@@ -115,7 +115,7 @@ GROUP BY
 ORDER BY 
     price;
 
--- Similar for womens_perfume
+-- Womens_perfume
 SELECT 
     price, 
     SUM(sold) AS TotalSold
