@@ -3,37 +3,48 @@ DDL (Data Definition Language) and DML (Data Manipulation Language)
 
 Subqueries, Stored Procedures, Functions, CTE, TempTable, and Views
 
-# Introduction
-Dive into the data job market! Focusing on data analyst roles, this project explores 💰 top-paying jobs, 🔥 in-demand skills, and 📈 where high demand meets high salary in data analytics.
+# Introduction | eBay Perfume Sales Analysis
 
-🔍 SQL queries? Check them out here: [Data_Analyst_Jobs_EDA](/jobPostings/)
+A deep dive into the eBay perfume sales data, which includes both men's and women's fragrances. The analysis explores patterns, trends, and insights from the dataset to understand factors such as brand popularity 🔥, pricing 💰, availability, sales comparisons between men's and women's products, and overall market trends📈.
+
+## Project Overview
+
+The analysis is divided into two parts:
+
+1. **Exploratory Data Analysis (EDA)**: Provides an initial examination of the dataset, including understanding the distribution of data, identifying key variables, and detecting any anomalies.
+2. **Advanced Analysis**: Focuses on deeper insights such as time-series analysis, text analysis for product descriptions, price trend analysis, and other custom queries to extract meaningful information.
+
+
+🔍 SQL queries? Check them out here: [eBay_fragrances_analysis](/eBay/)
 
 # Background
-Driven by a quest to navigate the data analyst job market more effectively, this project was born from a desire to pinpoint top-paid and in-demand skills, streamlining others work to find optimal jobs.
+Driven by a quest to strengthen my data analysis skills, this project was created to showcase my ability to extract actionable insights from real-world datasets. Focusing on eBay fragrance sales data, the aim was to analyze patterns, trends, and sales comparisons between men's and women's fragrances, while demonstrating my proficiency in SQL for data analysis. 
 
-It's packed with insights on job titles, salaries, locations, and essential skills.
+The goal was to highlight my ability to understand market trends, pricing strategies, and consumer behavior, positioning myself more effectively in the competitive data analytics job market.
 
 ### The questions I wanted to answer through my SQL queries were:
 
-1. What are the top-paying data analyst jobs?
-2. What skills are required for these top-paying jobs?
-3. What skills are most in demand for data analysts?
-4. Which skills are associated with higher salaries?
-5. What are the most optimal skills to learn?
+1. Which fragrance brands are the most popular based on sales volume?
+2. What is the average price point for bestselling perfumes, and how does it vary by brand or category (men's vs. women's)?
+3. Which regions or locations have the highest demand for perfumes?
+4. What time of year sees the highest perfume sales (e.g., seasonal trends or holiday spikes)?
+5. What are the most frequently used keywords or descriptions in listings that lead to higher sales?
+6. How does the availability of stock (inventory levels) impact sales performance for specific products?
+7. What are the return or refund rates for specific perfume brands or price ranges?
 
 # Tools I Used
 For my deep dive into the data analyst job market, I harnessed the power of several key tools:
 
 - **SQL:** The backbone of my analysis, allowing me to query the database and unearth critical insights.
-- **MSSQL:** The chosen database management system, ideal for handling the job posting data.
+- **MySQL Workbench:** The chosen database management system, ideal for handling the job posting data.
 - **Visual Studio Code:** My go-to for database management and executing SQL queries.
 - **Git & GitHub:** Essential for version control and sharing my SQL scripts and analysis, ensuring collaboration and project tracking.
 
 # The Analysis
-Each query for this project aimed at investigating specific aspects of the data analyst job market. Here’s how I approached each question:
+Each query for this project aimed at investigating specific aspects of the eBay fragrances data. Here’s how I approached each question:
 
-### 1. Top Paying Data Analyst Jobs
-To identify the highest-paying roles, I filtered data analyst positions by average yearly salary and location, focusing on remote jobs. This query highlights the high paying opportunities in the field.
+### 1.  Which fragrance brands are the most popular based on sales volume?
+The query to find the most popular fragrance brands based on sales volume counts the total number of sales for each brand and orders the results in descending order, showing the brands with the highest sales at the top.
 
 ```sql
 Select	Top 10
