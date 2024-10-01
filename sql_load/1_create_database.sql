@@ -1,3 +1,5 @@
-CREATE DATABASE sql_course;
+CREATE DATABASE eBay;
 
--- DROP DATABASE IF EXISTS sql_course;
+-- DROP DATABASE IF EXISTS eBay;
+
+USE eBay;
