@@ -25,8 +25,8 @@ The goal was to highlight my ability to understand market trends, pricing strate
 The project features intermediate to expert-level SQL queries, including Subqueries, CTEs, Stored Procedures, Functions, Temp Tables, Views, and JOINs to derive meaningful insights.
 
 ### Data Structure
-Men's Fragrances Table: Contains sales data for men’s fragrances.
-Women’s Fragrances Table: Contains sales data for women’s fragrances.
+* Men's Fragrances Table: Contains sales data for men’s fragrances.
+* Women’s Fragrances Table: Contains sales data for women’s fragrances.
 
 # Tools I Used
 For my deep dive into the data analyst job market, I harnessed the power of several key tools:
