@@ -59,12 +59,14 @@ ALTER TABLE mens_perfume ALTER COLUMN lastUpdated DATETIME;
 ALTER TABLE Womens_perfume ALTER COLUMN lastUpdated DATETIME;
 
 
--- Asalculate PricePerUnit
+-- Calculate PricePerUnit
 ALTER TABLE mens_perfume ADD PricePerUnit DECIMAL(10, 2);
 
 UPDATE mens_perfume
-SET PricePerUnit = price / quantity
-WHERE quantity IS NOT NULL;
+SET PricePerUnit = price / sold
+WHERE sold IS NOT NULL;
+
+SELECT brand, PricePerUnit FROM mens_perfume
 
 -- Calculate DaysOnMarket assuming you have a 'listingDate' column
 ALTER TABLE mens_perfume ADD DaysOnMarket INT;
