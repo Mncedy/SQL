@@ -85,16 +85,7 @@ Here’s a breakdown of top-performing features for bestselling fragrances:
 
 | Fragrance        | Average Price ($) |
 |---------------|-------------------:|
-| pyspark       |            208,172 |
-| bitbucket     |            189,155 |
-| couchbase     |            160,515 |
-| watson        |            160,515 |
-| datarobot     |            155,486 |
-| gitlab        |            154,500 |
-| swift         |            153,750 |
-| jupyter       |            152,777 |
-| pandas        |            151,821 |
-| elasticsearch |            145,000 |
+
 
 *Table of the average price for the top 10 selling fragrance*
 
@@ -106,16 +97,7 @@ By combining insights from demand and revenue data, this analysis identified pro
 
 Brand      | Demand Count | Average Price ($)  |
 -----------|--------------|-------------------:|
-go         | 27           |            115,320 |
-confluence | 11           |            114,210 |
-hadoop     | 22           |            113,193 |
-snowflake  | 37           |            112,948 |
-azure      | 34           |            111,225 |
-bigquery   | 13           |            109,654 |
-aws        | 32           |            108,317 |
-java       | 17           |            106,906 |
-ssis       | 12           |            106,683 |
-jira       | 20           |            104,918 |
+
 
 *Table of the most optimal brand sorted by price*
 

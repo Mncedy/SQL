@@ -18,31 +18,54 @@ From Ebay..womens_perfume;
 UPDATE mens_perfume
 SET price = CAST(REPLACE(priceWithCurrency, '$', '') AS DECIMAL(10, 2));
 
-UPDATE Womens_perfume
-SET price = CAST(REPLACE(priceWithCurrency, '$', '') AS DECIMAL(10, 2));
+UPDATE mens_perfume
+SET priceWithCurrency = CAST(REPLACE(REPLACE(SUBSTRING(priceWithCurrency, 
+                CHARINDEX('$', priceWithCurrency) + 1, 
+                CASE
+                    WHEN CHARINDEX('/', priceWithCurrency) > 0 
+                    THEN CHARINDEX('/', priceWithCurrency) - CHARINDEX('$', priceWithCurrency) - 1
+                    ELSE LEN(priceWithCurrency)
+                END
+            ), ',', ''), ' ', '') AS DECIMAL(10, 2))
+WHERE priceWithCurrency LIKE 'US $%/%';
+
+
+UPDATE mens_perfume
+SET price = CAST(REPLACE(REPLACE(SUBSTRING(priceWithCurrency, 1, 
+                CASE 
+                    WHEN CHARINDEX('/', priceWithCurrency) > 0 
+                    THEN CHARINDEX('/', priceWithCurrency) - 1
+                    ELSE LEN(priceWithCurrency)
+                END
+            ), '$', ''), ',', '') AS DECIMAL(10, 2))
+WHERE ISNUMERIC(REPLACE(REPLACE(SUBSTRING(priceWithCurrency, 1, 
+                CASE 
+                    WHEN CHARINDEX('/', priceWithCurrency) > 0 
+                    THEN CHARINDEX('/', priceWithCurrency) - 1
+                    ELSE LEN(priceWithCurrency)
+                END
+            ), '$', ''), ',', '')) = 1;
+
 
 -- Replace NULL values in availableText and itemLocation with default values (e.g., 'Not Available')
 UPDATE mens_perfume
-SET available = 0
-WHERE available IS NULL;
-
-UPDATE Womens_perfume
-SET itemLocation = 'Unknown'
-WHERE itemLocation IS NULL;
-
--- Replace NULL values in availableText and itemLocation with default values (e.g., 'Not Available')
-UPDATE mens_perfume
-SET availableText = 'Not Available'
+SET availableText = 0
 WHERE availableText IS NULL;
 
-UPDATE Womens_perfume
+UPDATE womens_perfume
+SET availableText = 0
+WHERE availableText IS NULL;
+
+UPDATE mens_perfume
+SET itemLocation = 'Unknown'
+WHERE itemLocation IS NULL;
+
+UPDATE womens_perfume
 SET itemLocation = 'Unknown'
 WHERE itemLocation IS NULL;
 
 
--- SQL has limited text processing capabilities compared to Python
--- However, you can use basic functions like SUBSTRING or CHARINDEX
--- Example: Extracting brand information if it appears as the first word in the title
+-- Extracting brand information if it appears as the first word in the title
 
 ALTER TABLE mens_perfume ADD BrandExtracted NVARCHAR(255);
 
@@ -51,7 +74,11 @@ SET BrandExtracted = SUBSTRING(title, 1, CHARINDEX(' ', title) - 1)
 WHERE CHARINDEX(' ', title) > 0;
 
 -- Similar logic applies to Womens_perfume
+ALTER TABLE womens_perfume ADD BrandExtracted NVARCHAR(255);
 
+UPDATE mens_perfume
+SET BrandExtracted = SUBSTRING(title, 1, CHARINDEX(' ', title) - 1)
+WHERE CHARINDEX(' ', title) > 0;
 
 -- Convert lastUpdated column to datetime
 ALTER TABLE mens_perfume ALTER COLUMN lastUpdated DATETIME;
@@ -68,11 +95,12 @@ WHERE sold IS NOT NULL;
 
 SELECT brand, PricePerUnit FROM mens_perfume
 
--- Calculate DaysOnMarket assuming you have a 'listingDate' column
-ALTER TABLE mens_perfume ADD DaysOnMarket INT;
-
-UPDATE mens_perfume
-SET DaysOnMarket = DATEDIFF(day, listingDate, lastUpdated);
-
 -- Similar logic applies to Womens_perfume
+ALTER TABLE womens_perfume ADD PricePerUnit DECIMAL(10, 2);
 
+UPDATE womens_perfume
+SET PricePerUnit = price / sold
+WHERE sold IS NOT NULL;
+
+SELECT brand, PricePerUnit FROM womens_perfume
+SELECT brand, PricePerUnit FROM mens_perfume
