@@ -58,6 +58,7 @@ BEGIN
     ROLLBACK TRANSACTION;
     PRINT 'Update failed due to conversion errors.';
 END
+
 ELSE
 BEGIN
     COMMIT TRANSACTION;
@@ -117,3 +118,23 @@ FROM
     INFORMATION_SCHEMA.COLUMNS
 WHERE 
     TABLE_NAME = 'mens_perfume';
+
+UPDATE mens_perfume
+SET lastUpdated = CONVERT(DATETIME, lastUpdated, 120);
+
+SELECT lastUpdated
+FROM mens_perfume
+WHERE TRY_CAST(lastUpdated AS DATETIME) IS NULL;
+
+-- Set invalid dates to NULL or a default value, if desired
+UPDATE mens_perfume
+SET lastUpdated = NULL
+WHERE TRY_CAST(lastUpdated AS DATETIME) IS NULL;
+
+ALTER TABLE mens_perfume
+ALTER COLUMN lastUpdated DATETIME;
+
+
+
+SET ANSI_WARNINGS OFF;
+-- fix = Warning: Null value is eliminated by an aggregate or other SET operation.

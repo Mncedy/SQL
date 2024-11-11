@@ -1,0 +1,6 @@
+eBay_Exploratory Data Analysis (EDA).sql - MNCEDISI.Ebay (MNCEDISI\Mnced (54))
+
+- Querying transaction count (Success)
+
+
+
