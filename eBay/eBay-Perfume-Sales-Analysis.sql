@@ -457,7 +457,7 @@ ORDER BY
     TotalRevenue DESC, itemLocation DESC;
 
 -- SQL is limited in heatmap visualization but you can create a cross-tab to analyze relationships.
--- Example: Cross-tab between brand and availability
+-- Example: Cross-tab between brand and availability.
 
 SELECT 
     brand, 
@@ -473,3 +473,4 @@ GROUP BY
 
 
 
+ 
