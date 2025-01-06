@@ -5,6 +5,10 @@ Use Ebay;
 
 Select Top 5
 	*
+From Ebay..mens_perfume;
+
+Select Top 5
+	*
 From Ebay..womens_perfume;
 
 -- Assuming prices are in different currencies, convert all prices to a single currency (e.g., USD)
@@ -108,7 +112,7 @@ SELECT brand, PricePerUnit FROM mens_perfume
 WITH BrandSales AS (
     SELECT 
         brand, 
-        SUM(sold * price) AS TotalRevenue,
+        ROUND(SUM(sold * price), 2) AS TotalRevenue,
         SUM(sold) AS TotalUnitsSold
     FROM 
         mens_perfume
@@ -127,41 +131,94 @@ FROM
 ORDER BY 
     TotalRevenue DESC;
 
--- Query 2: Stored Procedure to Get Top Brands by Type
--- Stored procedure to get top brands by fragrance type
-DROP PROCEDURE IF EXISTS GetTopBrandsByType;
-
-CREATE PROCEDURE GetTopBrandsByType
-    @FragranceType NVARCHAR(255), 
-    @TopN INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    WITH BrandTypeSales AS (
-        SELECT 
-            brand, 
-            type, 
-            SUM(ISNULL(sold, 0) * ISNULL(price, 0)) AS TotalRevenue,
-			SUM(ISNULL(sold, 0)) AS TotalUnitsSold
-        FROM 
-            mens_perfume
-        WHERE 
-            type IS NOT NULL
-        GROUP BY 
-            brand, type
-    )
-    SELECT TOP (@TopN) 
-        brand, 
-        TotalRevenue, 
-        TotalUnitsSold
+-- Query 2:
+-- Step 1: CTE to calculate average price and total sales by brand and type
+WITH BrandTypeAnalysis AS (
+    SELECT 
+        p.brand,
+        p.type, -- Assuming this identifies the fragrance type (e.g., Eau de Parfum)
+        AVG(p.price) AS AvgPricePoint,
+        SUM(s.sold) AS TotalUnitsSold
     FROM 
-        BrandTypeSales
-    ORDER BY 
-        TotalRevenue DESC;
-END;
+        mens_perfume AS p
+    JOIN 
+        mens_perfume AS s ON p.brand = s.brand
+    WHERE 
+        s.sold IS NOT NULL
+    GROUP BY 
+        p.brand, p.type
+),
+-- Step 2: Rank brands and types by total sales
+BestsellingBrands AS (
+    SELECT 
+        brand,
+        type,
+        AvgPricePoint,
+        TotalUnitsSold,
+        RANK() OVER (ORDER BY TotalUnitsSold DESC) AS SalesRank
+    FROM 
+        BrandTypeAnalysis
+)
+-- Final Query: Retrieve top 10 brands with highest sales
+SELECT 
+    brand,
+    type,
+    ROUND(AvgPricePoint, 2) AS AvgPricePoint,
+    TotalUnitsSold
+FROM 
+    BestsellingBrands
+WHERE 
+    SalesRank <= 10 -- Top 10 bestselling brands
+ORDER BY 
+    TotalUnitsSold DESC;
 
-EXEC GetTopBrandsByType @FragranceType = 'PRADA', @TopN = 10;
+
+
+
+-- Step 1: CTE to calculate total sales by product
+WITH ProductSales AS (
+    SELECT 
+        p.brand,
+        p.type AS FragranceType,
+        p.price,
+        SUM(s.sold) AS TotalUnitsSold
+    FROM 
+        mens_perfume AS p
+    JOIN 
+        mens_perfume AS s ON p.brand = s.brand
+    WHERE 
+        s.sold IS NOT NULL
+    GROUP BY 
+        p.brand, p.type, p.price
+),
+-- Step 2: CTE to rank products based on total units sold
+RankedProducts AS (
+    SELECT 
+        brand,
+        FragranceType,
+        price,
+        TotalUnitsSold,
+        RANK() OVER (ORDER BY TotalUnitsSold DESC) AS SalesRank
+    FROM 
+        ProductSales
+)
+-- Final Query: Retrieve features of the top 10 bestselling fragrances
+SELECT TOP 10
+    rp.brand,
+    rp.FragranceType,
+    rp.price,
+    rp.TotalUnitsSold,
+    CASE 
+        WHEN rp.price BETWEEN 15 AND 85 THEN 'Popular Price Range'
+        ELSE 'Other Price Range'
+    END AS PriceCategory
+FROM 
+    RankedProducts AS rp
+WHERE 
+    rp.SalesRank <= 10
+ORDER BY 
+    rp.SalesRank;
+
 
 
 --2. Inventory and Stock Management
@@ -179,13 +236,14 @@ FROM (
         title, 
         available, 
         sold, 
-        (sold / NULLIF(available, 0)) * 100 AS SellThroughRate
+        ROUND((sold / NULLIF(available, 0)) * 100, 2) AS SellThroughRate
     FROM 
         mens_perfume
 ) AS ProductSalesWithRate
 WHERE 
     sold > 0 
     AND available < 10  -- Threshold for low availability
+    AND brand = 'Tommy Hilfiger'
 ORDER BY 
     SellThroughRate DESC;
 
@@ -455,6 +513,42 @@ GROUP BY
     brand, itemLocation
 ORDER BY 
     TotalRevenue DESC, itemLocation DESC;
+
+-- Stored Procedure to Get Top Brands by Type
+-- Stored procedure to get top brands by fragrance type
+DROP PROCEDURE IF EXISTS GetTopBrandsByType;
+
+CREATE PROCEDURE GetTopBrandsByType
+    @FragranceType NVARCHAR(255), 
+    @TopN INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    WITH BrandTypeSales AS (
+        SELECT 
+            brand, 
+            type, 
+            ROUND(SUM(ISNULL(sold, 0) * ISNULL(price, 0)), 2) AS TotalRevenue,
+			SUM(ISNULL(sold, 0)) AS TotalUnitsSold
+        FROM 
+            mens_perfume
+        WHERE 
+            type IS NOT NULL
+        GROUP BY 
+            brand, type
+    )
+    SELECT TOP (@TopN) 
+        brand, 
+        TotalRevenue, 
+        TotalUnitsSold
+    FROM 
+        BrandTypeSales
+    ORDER BY 
+        TotalRevenue DESC;
+END;
+
+EXEC GetTopBrandsByType @FragranceType = '', @TopN = 6;
 
 -- SQL is limited in heatmap visualization but you can create a cross-tab to analyze relationships.
 -- Example: Cross-tab between brand and availability.

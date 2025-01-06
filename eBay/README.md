@@ -41,7 +41,7 @@ Each query for this project aimed at investigating specific aspects of the eBay 
 
 ### The questions I wanted to answer through my SQL queries were:
 
-1. Which fragrance brands are the most popular based on sales volume?
+1. Which fragrance brands are the most profitable brands based on total revenue?
 2. What is the average price point for bestselling perfumes, and how does it vary by brand or category (men's vs. women's)?
 3. Which regions or locations have the highest demand for perfumes?
 4. What time of year sees the highest perfume sales (e.g., seasonal trends or holiday spikes)?
@@ -51,12 +51,34 @@ Each query for this project aimed at investigating specific aspects of the eBay 
 
 ### 1.  Which fragrance brands are the most popular based on sales volume?
 The query to find the most popular fragrance brands based on sales volume counts the total number of sales for each brand and orders the results in descending order, showing the brands with the highest sales at the top.
+```sql
+WITH BrandSales AS (
+    SELECT 
+        brand, 
+        ROUND(SUM(sold * price), 2) AS TotalRevenue,
+        SUM(sold) AS TotalUnitsSold
+    FROM 
+        mens_perfume
+    WHERE 
+        sold IS NOT NULL
+    GROUP BY 
+        brand
+)
+-- Main query to find top 10 brands by revenue
+SELECT TOP 10
+    brand, 
+    TotalRevenue, 
+    TotalUnitsSold
+FROM 
+    BrandSales
+ORDER BY 
+    TotalRevenue DESC;
+```
 
 
 Here's the breakdown of the top fragrances on eBay:
 - **Wide Price Range**: The top 10 bestselling fragrance brands range in price from $25 to $300, showcasing a broad spectrum in pricing strategies and market appeal within the fragrance sector.
-- **Diverse Brands**: Brands like BrandX, BrandY, and BrandZ lead in sales, highlighting strong competition and customer loyalty across different fragrance producers.
-- **Product Variety**: The data includes a wide variety of product types, from Eau de Parfum to Eau de Toilette, reflecting varied customer preferences and product specializations within the fragrance market.
+- **Diverse Brands**: Brands like Versace, Calvin Klein, and Azzaro lead in sales, highlighting strong competition and customer loyalty across different fragrance producers.
 
 ### 2. 
 - **Top-Selling Fragrances**:
